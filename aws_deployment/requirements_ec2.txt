@@ -1,0 +1,10 @@
+# Python Dependencies for EC2 Django Server
+# PySpark is excluded - it will run on EMR cluster
+
+Django==4.2.0
+mysqlclient==2.2.0
+pandas==2.0.0
+numpy==1.24.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+boto3==1.28.0
