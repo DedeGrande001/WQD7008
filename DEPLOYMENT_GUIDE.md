@@ -111,7 +111,7 @@ aws s3 ls s3://recommendation-system-data-dedegrande/ --recursive
    - **密钥对**: my-new-key
    - **安全组**: 允许 SSH (22)、HTTP (8000)
 
-#### 4.2 添加公钥到 EC2
+#### 4.2 添加公钥到 EC2（4.2和4.3本地如果只想用chrome打开实例的话，本地终端不连接可以略过）
 
 **通过 EC2 Instance Connect（浏览器）：**
 
