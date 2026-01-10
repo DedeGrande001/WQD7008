@@ -59,7 +59,7 @@ notepad $env:USERPROFILE\.aws\credentials
 
 ---
 
-### 2. 创建 EC2 SSH 密钥对（在本地poweshell）
+### 2. 创建 EC2 SSH 密钥对（在本地poweshell，这一步本地如果只想用chrome打开实例的话本地终端不连接可以略过）
 
 ```powershell
 # 进入 .ssh 目录
