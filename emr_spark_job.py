@@ -26,7 +26,11 @@ print(f"RDS Host: {RDS_HOST}")
 # 创建 Spark Session
 spark = SparkSession.builder \
     .appName("MovieLens-Recommendation-EMR") \
-    .config("spark.jars.packages", "mysql:mysql-connector-java:8.0.33") \
+    .config("spark.jars.packages", "mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026") \
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
+    .config("spark.hadoop.fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
+    .config("spark.hadoop.fs.s3a.connection.timeout", "60000") \
+    .config("spark.hadoop.fs.s3a.connection.establish.timeout", "60000") \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("WARN")
