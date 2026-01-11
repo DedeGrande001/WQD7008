@@ -30,7 +30,6 @@ spark = SparkSession.builder \
     .config("spark.driver.memory", "512m") \
     .config("spark.executor.memory", "512m") \
     .config("spark.sql.shuffle.partitions", "2") \
-    # 确保包含 mysql 驱动
     .config("spark.jars.packages", "mysql:mysql-connector-java:8.0.33") \
     .getOrCreate()
 
