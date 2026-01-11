@@ -368,7 +368,9 @@ while ($true) {
 **集群状态变为 WAITING 后执行：**
 
 ```powershell
-aws emr add-steps --cluster-id j-xxxxxxxxxxxxx --steps '[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33","s3://recommendation-system-data-dedegrande/scripts/emr_spark_job.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]'
+'[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33","s3://recommendation-system-data-dedegrande/scripts/emr_spark_job.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]' | Out-File -Encoding ASCII steps.json
+
+aws emr add-steps --cluster-id j-156UVBFYPLTPH --steps file://steps.json
 ```
 
 **保存返回的 Step ID：** `s-xxxxxxxxxxxxx`
