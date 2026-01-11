@@ -159,10 +159,10 @@ sudo apt install -y git python3 python3-pip python3-venv python3-dev \
 cd ~
 
 # 克隆项目（替换为你的 GitHub 仓库）
-git clone https://github.com/你的用户名/recommendation-system.git
+git clone https://github.com/DedeGrande001/WQD7008.git
 
 # 进入项目目录
-cd recommendation-system
+cd WQD7008
 
 # 查看文件
 ls -la
