@@ -561,6 +561,10 @@ curl http://100.27.231.13:8000/recommendations/?limit=10
 }
 ```
 ![alt text](image-18.png)
+#### 在本地chrome输入网址也可查看
+![alt text](image-19.png) 
+![alt text](image-20.png)
+
 ---
 
 ### 21. 终止 EMR 集群
