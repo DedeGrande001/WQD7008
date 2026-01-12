@@ -56,6 +56,19 @@ notepad $env:USERPROFILE\.aws\credentials
 # aws_secret_access_key=...
 # aws_session_token=...
 ```
+#### AWS CLI创建S3 bucket
+```powershell
+# 创建S3存储桶
+aws s3 mb s3://recommendation-system-data-dedegrande --region us-east-1
+
+# 创建子文件夹结构（通过上传空文件实现）
+aws s3api put-object --bucket recommendation-system-data-dedegrande --key input/
+aws s3api put-object --bucket recommendation-system-data-dedegrande --key scripts/
+aws s3api put-object --bucket recommendation-system-data-dedegrande --key logs/
+
+
+
+```
 
 ---
 
