@@ -89,10 +89,17 @@ aws s3 cp data/movies.csv s3://recommendation-system-data-dedegrande/input/
 aws s3 cp data/ratings.csv s3://recommendation-system-data-dedegrande/input/
 
 # 上传 Spark 脚本
-aws s3 cp emr_spark_job.py s3://recommendation-system-data-dedegrande/scripts/
+aws s3 cp spark_recommendation.py s3://recommendation-system-data-dedegrande/scripts/
+
 
 # 验证上传
 aws s3 ls s3://recommendation-system-data-dedegrande/ --recursive
+```
+
+```powershell
+#将s3数据导入ec2 实例，ec2 控制台上执行
+aws s3 sync s3://recommendation-system-data-dedegrande/input/ ~/WQD7008/data/
+
 ```
 
 ---
@@ -279,6 +286,67 @@ tail -f django.log
 
 ---
 
+### 11.5 运行 Spark 数据处理（EC2 控制台）
+
+**安装 Java 和 PySpark：**
+
+```bash
+# 安装 Java 17
+sudo apt install -y openjdk-17-jdk
+
+# 设置 JAVA_HOME
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# 安装 PySpark
+source venv/bin/activate
+pip install pyspark
+```
+
+**下载 S3 数据到本地（如果尚未下载）：**
+
+```bash
+# 确保 data 目录存在
+mkdir -p ~/WQD7008/data
+
+# 从 S3 下载 CSV 文件
+aws s3 sync s3://recommendation-system-data-dedegrande/input/ ~/WQD7008/data/
+```
+
+**运行 Spark 推荐脚本：（EC2 控制台）**
+
+```bash
+# 激活虚拟环境
+cd ~/WQD7008
+source venv/bin/activate
+
+# 清空现有数据（可选）
+python manage.py shell -c "from app.models import Movie, RecommendationData; RecommendationData.objects.all().delete(); Movie.objects.all().delete(); print('Database cleared')"
+
+# 运行 Spark 脚本（处理 100 部电影）
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+python spark_recommendation.py
+
+# 查看输出
+# 预期：
+# - Loaded 100 movies
+# - Loaded 804712 ratings
+# - Job completed successfully!
+```
+
+**验证数据写入：**
+
+```bash
+python manage.py shell -c "from app.models import Movie, RecommendationData; print(f'Movies: {Movie.objects.count()}'); print(f'Recommendations: {RecommendationData.objects.count()}')"
+```
+
+**预期输出：**
+```
+Movies: 100
+Recommendations: 100
+```
+
+---
+
 ### 12. 配置 EC2 安全组
 
 **AWS 控制台：**
@@ -368,10 +436,16 @@ while ($true) {
 **集群状态变为 WAITING 后执行：**
 
 ```powershell
-'[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33","s3://recommendation-system-data-dedegrande/scripts/emr_spark_job.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]' | Out-File -Encoding ASCII steps.json
+'[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026","s3://recommendation-system-data-dedegrande/scripts/spark_recommendation.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]' | Out-File -Encoding ASCII steps.json
 
-aws emr add-steps --cluster-id j-156UVBFYPLTPH --steps file://steps.json
+# 替换为你的 Cluster ID
+aws emr add-steps --cluster-id j-xxxxxxxxxxxxx --steps file://steps.json
 ```
+
+**说明：**
+- `spark_recommendation.py` 支持本地和 EMR 两种模式
+- 本地模式（EC2）：不带参数运行，处理 100 部电影避免资源耗尽
+- EMR 模式：传入 5 个参数（S3路径、RDS配置），处理完整数据集
 
 **保存返回的 Step ID：** `s-xxxxxxxxxxxxx`
 
@@ -399,8 +473,6 @@ while ($true) {
     Start-Sleep -Seconds 30
 }
 ```
-
-**预计需要 10-20 分钟处理 25M 条数据**
 
 ---
 
@@ -451,7 +523,7 @@ exit
 
 ---
 
-### 21. 终止 EMR 集群（重要！省钱）
+### 21. 终止 EMR 集群
 
 ```powershell
 # 终止集群
