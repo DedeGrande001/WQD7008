@@ -91,13 +91,19 @@ try:
     movie_count = movies_df.count()
     print(f"Loaded {movie_count} movies")
 
-    # Get movie IDs for filtering ratings
-    movie_ids = [row.movieId for row in movies_df.select("movieId").collect()]
-
-    # Read ratings (only for selected movies)
+    # Read ratings
     ratings_path = f"{DATA_SOURCE}/ratings.csv"
     ratings_full = spark.read.csv(ratings_path, header=True, inferSchema=True)
-    ratings_df = ratings_full.filter(col("movieId").isin(movie_ids))
+
+    # In local mode, filter ratings to match limited movies
+    # In EMR mode, use all ratings for better performance
+    if LIMIT_MOVIES:
+        # Local mode: collect movie IDs and filter ratings
+        movie_ids = [row.movieId for row in movies_df.select("movieId").collect()]
+        ratings_df = ratings_full.filter(col("movieId").isin(movie_ids))
+    else:
+        # EMR mode: use all ratings (no filtering needed)
+        ratings_df = ratings_full
 
     rating_count = ratings_df.count()
     print(f"Loaded {rating_count} ratings")

@@ -242,7 +242,8 @@ mysql -h recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com \
       -u admin \
       -p \
       recommendation_db
-
+# 数据库清除表命令
+mysql -h recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com -u admin -pRecommendDB2026! recommendation_db -e "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE recommendation_data; TRUNCATE TABLE movies; SET FOREIGN_KEY_CHECKS=1;"
 # 输入密码：RecommendDB2026!
 # 连接成功后输入 exit 退出
 ```
@@ -288,18 +289,14 @@ tail -f django.log
 
 ### 11.5 运行 Spark 数据处理（EC2 控制台）
 
-**安装 Java 和 PySpark：**
+**安装 Java 17：**
 
 ```bash
-# 安装 Java 17
+# 安装 Java 17（PySpark 已包含在 requirements.txt）
 sudo apt install -y openjdk-17-jdk
 
 # 设置 JAVA_HOME
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-
-# 安装 PySpark
-source venv/bin/activate
-pip install pyspark
 ```
 
 **下载 S3 数据到本地（如果尚未下载）：**
@@ -407,6 +404,7 @@ aws emr create-cluster --name "MovieLens-Recommendation-Cluster" --release-label
 
 **保存返回的 Cluster ID：** `j-xxxxxxxxxxxxx`
 
+![alt text](image-15.png)
 ---
 
 ### 16. 等待集群启动
@@ -426,6 +424,8 @@ while ($true) {
     Start-Sleep -Seconds 30
 }
 ```
+
+![alt text](image-14.png)
 
 **预计需要 5-10 分钟**
 
@@ -473,6 +473,22 @@ while ($true) {
     Start-Sleep -Seconds 30
 }
 ```
+![alt text](image-16.png)
+
+#### 查看emr日志
+```powershell
+# 列出该Step的所有日志
+aws s3 ls s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$newStepId/stderr.gz
+
+# 下载stderr日志
+aws s3 cp s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$newStepId/stderr.gz ./
+
+# 解压并查看（Windows）
+powershell -command "& { [System.IO.Compression.GZipStream]::new([System.IO.File]::OpenRead('stderr.gz'), [System.IO.Compression.CompressionMode]::Decompress).CopyTo([System.IO.File]::Create('stderr.log')) }"
+
+# 查看日志
+Get-Content stderr.log -Tail 50
+```
 
 ---
 
@@ -492,22 +508,33 @@ mysql -h recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com \
 # 输入密码后，在 MySQL shell 执行：
 SELECT COUNT(*) FROM movies;
 SELECT COUNT(*) FROM recommendation_data;
-SELECT title, recommendation_score FROM movies
-  ORDER BY recommendation_score DESC LIMIT 10;
+SELECT
+      m.title,
+      r.recommendation_score,
+      m.avg_rating,
+      m.rating_count
+  FROM recommendation_data r
+  JOIN movies m ON r.movie_id = m.id
+  ORDER BY r.recommendation_score DESC
+  LIMIT 10;
 
 # 退出
 exit
 ```
-
+![alt text](image-17.png)
 ---
 
 ### 20. 测试 API 返回推荐数据
 
-**本地浏览器访问：**
+**EC2 控制台输入：**
 
-- `http://<EC2公网IP>:8000/stats/`
-- `http://<EC2公网IP>:8000/recommendations/?limit=10`
+```powershell
+# 确认Django服务正在运行
+curl http://100.27.231.13:8000/stats/
 
+curl http://100.27.231.13:8000/recommendations/?limit=10
+
+```
 **预期返回：**
 ```json
 {
@@ -520,7 +547,7 @@ exit
     }
 }
 ```
-
+![alt text](image-18.png)
 ---
 
 ### 21. 终止 EMR 集群
