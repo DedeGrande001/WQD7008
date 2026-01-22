@@ -30,6 +30,9 @@
 **Windows PowerShell：**
 
 ```powershell
+#aws cli安装
+sudo apt update
+sudo apt install awscli
 # 配置 AWS 凭证
 aws configure
 
