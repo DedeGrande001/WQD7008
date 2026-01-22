@@ -250,7 +250,12 @@ DEBUG=False
 
 
 ```bash
-# 测试 MySQL 连接
+# 测试 MySQL 连接，这里记得替换成你的:
+#mysql -h recommendation-db.xxxxxx.us-east-1.rds.amazonaws.com \
+#      -u admin \
+#      -p \
+#      recommendation_db
+#后面同理
 mysql -h recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com \
       -u admin \
       -p \
@@ -319,11 +324,15 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 mkdir -p ~/WQD7008/data
 
 # 从 S3 下载 CSV 文件
+# 记得替换成自己的：
+# aws s3 sync s3://recommendation-system-data-xxxxxx/input/ ~/WQD7008/data/
 aws s3 sync s3://recommendation-system-data-dedegrande/input/ ~/WQD7008/data/
 ```
 
 **运行 Spark 推荐脚本：（EC2 控制台）**
-
+#### 运行前记得检查这里 改成自己相应的
+![alt text](image-21.png)
+#### 这一步是为了验证在ec2本地环境下，spark推荐脚本可用
 ```bash
 # 激活虚拟环境
 cd ~/WQD7008
@@ -412,6 +421,7 @@ curl http://<EC2公网IP>:8000/health/
 **PowerShell 执行（一行命令）：**
 
 ```powershell
+#记得替换：s3://recommendation-system-data-xxxxxx/
 aws emr create-cluster --name "MovieLens-Recommendation-Cluster" --release-label emr-7.0.0 --applications Name=Spark --ec2-attributes KeyName=my-new-key --instance-type m5.xlarge --instance-count 3 --use-default-roles --log-uri s3://recommendation-system-data-dedegrande/logs/ --region us-east-1
 ```
 
@@ -448,7 +458,11 @@ while ($true) {
 
 **集群状态变为 WAITING 后执行：**
 
+
+
 ```powershell
+#记得替换：recommendation-db.xxxxxx.us-east-1.rds.amazonaws.com \
+# s3://recommendation-system-data-xxxxxxx/
 '[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026","s3://recommendation-system-data-dedegrande/scripts/spark_recommendation.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]' | Out-File -Encoding ASCII steps.json
 
 # 替换为你的 Cluster ID
