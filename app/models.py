@@ -9,7 +9,7 @@ class Movie(models.Model):
     """
     Model to store movie information from MovieLens
     """
-    movie_id = models.IntegerField(unique=True, db_index=True)
+    movie_id = models.IntegerField(unique=True, db_index=True, primary_key=True)
     title = models.CharField(max_length=500)
     genres = models.CharField(max_length=200, blank=True, null=True)
     year = models.IntegerField(null=True, blank=True)
