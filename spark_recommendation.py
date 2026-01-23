@@ -170,7 +170,7 @@ try:
         .option("password", RDS_PASSWORD) \
         .option("driver", "com.mysql.cj.jdbc.Driver") \
         .load() \
-        .select(col("id").alias("pk_id"), col("movie_id").alias("csv_id"))
+        .select(col("movie_id").alias("pk_id"), col("movie_id").alias("csv_id"))
 
     # Join recommendations with database IDs
     # recommendations.movieId = CSV movie ID
