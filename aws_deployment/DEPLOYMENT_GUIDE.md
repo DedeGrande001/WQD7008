@@ -466,7 +466,23 @@ while ($true) {
 ```powershell
 #记得替换：recommendation-db.xxxxxx.us-east-1.rds.amazonaws.com \
 # s3://recommendation-system-data-xxxxxxx/
-'[{"Type":"Spark","Name":"MovieLens-Processing","ActionOnFailure":"CONTINUE","Args":["spark-submit","--deploy-mode","cluster","--packages","mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026","s3://recommendation-system-data-dedegrande/scripts/spark_recommendation.py","s3://recommendation-system-data-dedegrande/input","recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com","recommendation_db","admin","RecommendDB2026!"]}]' | Out-File -Encoding ASCII steps.json
+[
+  {
+    "Type": "Spark",
+    "Name": "MovieLens-Processing",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--packages", "mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026",
+      "s3://recommendation-system-data-dedegrande/scripts/spark_recommendation.py",
+      "s3://recommendation-system-data-dedegrande/input",
+      "recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com",
+      "recommendation_db",
+      "admin",
+      "RecommendDB2026!"
+    ]
+  }
+]
 
 # 替换为你的 Cluster ID
 aws emr add-steps --cluster-id j-xxxxxxxxxxxxx --steps file://steps.json
@@ -508,10 +524,10 @@ while ($true) {
 #### 查看emr日志
 ```powershell
 # 列出该Step的所有日志
-aws s3 ls s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$newStepId/stderr.gz
+aws s3 ls s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$stepId/stderr.gz
 
 # 下载stderr日志
-aws s3 cp s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$newStepId/stderr.gz ./
+aws s3 cp s3://recommendation-system-data-dedegrande/logs/$clusterId/steps/$stepId/stderr.gz ./
 
 # 解压并查看（Windows）
 powershell -command "& { [System.IO.Compression.GZipStream]::new([System.IO.File]::OpenRead('stderr.gz'), [System.IO.Compression.CompressionMode]::Decompress).CopyTo([System.IO.File]::Create('stderr.log')) }"
@@ -538,15 +554,15 @@ mysql -h recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com \
 # 输入密码后，在 MySQL shell 执行：
 SELECT COUNT(*) FROM movies;
 SELECT COUNT(*) FROM recommendation_data;
-SELECT
-      m.title,
-      r.recommendation_score,
-      m.avg_rating,
-      m.rating_count
-  FROM recommendation_data r
-  JOIN movies m ON r.movie_id = m.id
-  ORDER BY r.recommendation_score DESC
-  LIMIT 10;
+SELECT 
+    m.title, 
+    r.recommendation_score, 
+    m.avg_rating, 
+    m.rating_count
+FROM recommendation_data r
+JOIN movies m ON r.movie_id = m.movie_id
+ORDER BY r.recommendation_score DESC
+LIMIT 10;
 
 # 退出
 exit
