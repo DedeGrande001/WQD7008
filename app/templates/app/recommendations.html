@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations - MovieLens System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .control-input, .control-select {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-input:focus, .control-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .stats-bar {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .movie-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .movie-rank {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 50px;
+        }
+
+        .movie-score-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .movie-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .movie-genre {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .movie-year {
+            color: #666;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .page-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            padding: 50px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .no-results {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .control-group {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Movie Recommendations</h1>
+            <p>Browse personalized movie recommendations powered by Apache Spark</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/dashboard/" class="nav-btn">Statistics Dashboard</a>
+            <a href="/movies/" class="nav-btn">Recommendations List</a>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="control-label">Genre Filter:</label>
+                <select id="genreFilter" class="control-select">
+                    <option value="">All Genres</option>
+                    <option value="Action">Action</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Animation">Animation</option>
+                    <option value="Children">Children</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Crime">Crime</option>
+                    <option value="Documentary">Documentary</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Musical">Musical</option>
+                    <option value="Mystery">Mystery</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="War">War</option>
+                    <option value="Western">Western</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Items per page:</label>
+                <select id="limitSelect" class="control-select">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <button class="control-btn" onclick="applyFilters()">Apply Filters</button>
+        </div>
+
+        <div id="statsBar" class="stats-bar" style="display: none;"></div>
+
+        <div id="loading" class="loading">Loading recommendations...</div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="content" style="display: none;">
+            <div id="recommendationsGrid" class="recommendations-grid"></div>
+
+            <div class="pagination">
+                <button class="page-btn" id="prevBtn" onclick="previousPage()">Previous</button>
+                <div class="page-info" id="pageInfo">Page 1</div>
+                <button class="page-btn" id="nextBtn" onclick="nextPage()">Next</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by Django + Spark + EMR + RDS | MovieLens 25M Dataset</p>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let currentLimit = 20;
+        let currentGenre = '';
+        let totalItems = 0;
+        let currentOffset = 0;
+
+        async function loadRecommendations() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const content = document.getElementById('content');
+            const statsBar = document.getElementById('statsBar');
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            content.style.display = 'none';
+            statsBar.style.display = 'none';
+
+            try {
+                const genreParam = currentGenre ? `&genre=${encodeURIComponent(currentGenre)}` : '';
+                const url = `/recommendations/?limit=${currentLimit}&offset=${currentOffset}${genreParam}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    totalItems = data.data.total;
+                    const recommendations = data.data.recommendations;
+
+                    // Update stats bar
+                    const genreText = currentGenre ? ` (Genre: ${currentGenre})` : '';
+                    statsBar.innerHTML = `Showing ${recommendations.length} of ${totalItems.toLocaleString()} recommendations${genreText}`;
+                    statsBar.style.display = 'block';
+
+                    // Update recommendations grid
+                    const grid = document.getElementById('recommendationsGrid');
+                    if (recommendations.length === 0) {
+                        grid.innerHTML = '<div class="no-results">No recommendations found for the selected filters.</div>';
+                    } else {
+                        grid.innerHTML = '';
+                        recommendations.forEach((movie, index) => {
+                            const globalIndex = currentOffset + index + 1;
+                            const card = document.createElement('div');
+                            card.className = 'movie-card';
+
+                            const yearText = movie.movie__year ? `Year: ${movie.movie__year}` : 'Year unknown';
+
+                            card.innerHTML = `
+                                <div class="movie-header">
+                                    <div class="movie-rank">#${globalIndex}</div>
+                                    <div class="movie-score-badge">${movie.recommendation_score.toFixed(3)}</div>
+                                </div>
+                                <div class="movie-title">${movie.movie__title}</div>
+                                <div class="movie-genre">${movie.movie__genres || 'Unknown'}</div>
+                                <div class="movie-year">${yearText}</div>
+                            `;
+                            grid.appendChild(card);
+                        });
+                    }
+
+                    // Update pagination
+                    updatePagination();
+
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = 'Error loading recommendations: ' + err.message;
+            }
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalItems / currentLimit);
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                currentOffset = (currentPage - 1) * currentLimit;
+                loadRecommendations();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(totalItems / currentLimit);
+            if (currentPage < totalPages) {
+                currentPage++;
+                currentOffset = (currentPage - 1) * currentLimit;
+                loadRecommendations();
+            }
+        }
+
+        function applyFilters() {
+            currentGenre = document.getElementById('genreFilter').value;
+            currentLimit = parseInt(document.getElementById('limitSelect').value);
+            currentPage = 1;
+            currentOffset = 0;
+            loadRecommendations();
+        }
+
+        // Load recommendations on page load
+        window.addEventListener('DOMContentLoaded', loadRecommendations);
+    </script>
+</body>
+</html>
