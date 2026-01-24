@@ -2,6 +2,7 @@
 Simplified API views for recommendation system
 """
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.db.models import Avg, Count
 from .models import Movie, RecommendationData
 
@@ -89,3 +90,13 @@ def recommendations_api(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+def stats_page(request):
+    """Render the statistics dashboard page"""
+    return render(request, 'app/stats.html')
+
+
+def recommendations_page(request):
+    """Render the recommendations list page"""
+    return render(request, 'app/recommendations.html')
