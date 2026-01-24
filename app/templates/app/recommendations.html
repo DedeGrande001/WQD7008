@@ -66,6 +66,11 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
         .controls {
             background: white;
             padding: 20px;
@@ -263,12 +268,6 @@
             font-size: 1.2em;
         }
 
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 30px;
-            opacity: 0.8;
-        }
 
         @media (max-width: 768px) {
             .controls {
@@ -295,7 +294,7 @@
 
         <div class="nav-buttons">
             <a href="/dashboard/" class="nav-btn">Statistics Dashboard</a>
-            <a href="/movies/" class="nav-btn">Recommendations List</a>
+            <a href="/movies/" class="nav-btn active">Recommendations List</a>
         </div>
 
         <div class="controls">
@@ -350,10 +349,6 @@
                 <div class="page-info" id="pageInfo">Page 1</div>
                 <button class="page-btn" id="nextBtn" onclick="nextPage()">Next</button>
             </div>
-        </div>
-
-        <div class="footer">
-            <p>Powered by Django + Spark + EMR + RDS | MovieLens 25M Dataset</p>
         </div>
     </div>
 

@@ -160,7 +160,16 @@
             margin: 20px 0;
         }
 
-        .refresh-btn {
+        .nav-buttons {
+            text-align: center;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
             background: white;
             color: #667eea;
             border: none;
@@ -169,22 +178,22 @@
             font-size: 1em;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .refresh-btn:hover {
+        .nav-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
-        .footer {
-            text-align: center;
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            margin-top: 30px;
-            opacity: 0.8;
         }
+
     </style>
 </head>
 <body>
@@ -192,7 +201,12 @@
         <div class="header">
             <h1>MovieLens Recommendation System</h1>
             <p>Distributed Big Data Processing with Apache Spark on AWS EMR</p>
-            <button class="refresh-btn" onclick="loadStats()">Refresh Data</button>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/dashboard/" class="nav-btn active">Statistics Dashboard</a>
+            <a href="/movies/" class="nav-btn">Recommendations List</a>
+            <button class="nav-btn" onclick="loadStats()">Refresh Data</button>
         </div>
 
         <div id="loading" class="loading">Loading statistics...</div>
@@ -223,10 +237,6 @@
                 <h2>Top 10 Recommended Movies</h2>
                 <ul class="movie-list" id="movieList"></ul>
             </div>
-        </div>
-
-        <div class="footer">
-            <p>Powered by Django + Spark + EMR + RDS | MovieLens 25M Dataset</p>
         </div>
     </div>
 
