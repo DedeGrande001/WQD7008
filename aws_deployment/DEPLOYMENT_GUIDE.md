@@ -466,14 +466,17 @@ while ($true) {
 ```powershell
 #记得替换：recommendation-db.xxxxxx.us-east-1.rds.amazonaws.com \
 # s3://recommendation-system-data-xxxxxxx/
+$jsonContent = @'
 [
   {
     "Type": "Spark",
     "Name": "MovieLens-Processing",
     "ActionOnFailure": "CONTINUE",
     "Args": [
-      "--deploy-mode", "cluster",
-      "--packages", "mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026",
+      "--deploy-mode",
+      "cluster",
+      "--packages",
+      "mysql:mysql-connector-java:8.0.33,org.apache.hadoop:hadoop-aws:3.3.2,com.amazonaws:aws-java-sdk-bundle:1.11.1026",
       "s3://recommendation-system-data-dedegrande/scripts/spark_recommendation.py",
       "s3://recommendation-system-data-dedegrande/input",
       "recommendation-db.croqeqgd3egv.us-east-1.rds.amazonaws.com",
@@ -483,6 +486,10 @@ while ($true) {
     ]
   }
 ]
+'@
+
+# 将内容写入文件，确保编码格式兼容
+$jsonContent | Out-File -Encoding ASCII steps.json
 
 # 替换为你的 Cluster ID
 aws emr add-steps --cluster-id j-xxxxxxxxxxxxx --steps file://steps.json
